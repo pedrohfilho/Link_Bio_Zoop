@@ -26,7 +26,7 @@
   --destaque-suave: rgba(155, 225, 90, 0.14);
   --sobre-destaque: #06241f;
 
-  --margem: clamp(20px, 6vw, 28px);
+  --margem: clamp(26px, 11.5vw, 56px); /* nas telas estreitas deixa uma faixa livre dos lados, onde as bolhas passam */
   --largura: 520px;
   --raio-cartao: 20px;
   --raio-painel: 24px;
@@ -75,6 +75,7 @@ a { color: inherit; text-decoration: none; }
 
 .pagina { position: relative; overflow: hidden; min-height: 100vh; min-height: 100svh; }
 
+@media (max-width: 300px) { :root { --margem: 22px; } }
 .container {
   position: relative; width: 100%; max-width: calc(var(--largura) + 2 * var(--margem)); margin-inline: auto;
   padding-left: max(var(--margem), env(safe-area-inset-left, 0px));
@@ -202,6 +203,13 @@ div.cartao { cursor: default; }
   50% { box-shadow: 0 0 0 9px rgba(155, 225, 90, 0.1), 0 14px 38px rgba(155, 225, 90, 0.36); }
 }
 
+/* Frase sob a logo. Qualquer tamanho de texto: quebra a linha, nunca passa da coluna e fica centralizada. */
+.descricao {
+  text-align: center; font-size: clamp(1rem, 3.6vw, 1.12rem); line-height: 1.55; color: var(--texto-suave);
+  max-width: 46ch; margin: 2px auto 10px; padding-inline: 4px; overflow-wrap: anywhere; text-wrap: pretty;
+}
+.descricao em { font-style: normal; font-weight: 700; color: var(--destaque); }
+
 /* A cor do ícone acompanha o brilho de cada cartão. */
 .brilho--instagram .cartao__icone, .cartao.brilho--instagram .cartao__icone { background: rgba(221, 42, 123, 0.16); color: #ff6fae; }
 .brilho--whatsapp .cartao__icone { background: rgba(37, 211, 102, 0.16); color: #3be67f; }
@@ -242,6 +250,13 @@ div.cartao { cursor: default; }
 }
 @media (hover: hover) and (pointer: fine) { .membro__alvo:hover { transform: scale(1.1); } }
 .membro__alvo:active { transform: scale(1.06); }
+/* Nome sempre visível sob a foto, pequeno, em até duas linhas; ocupa a largura da coluna mais metade do vão de cada lado. */
+.membro__nome {
+  display: block; margin: 7px calc(var(--espaco) / -2 + 1px) 0; text-align: center; color: var(--texto);
+  font-family: var(--fonte-titulo); font-weight: 600; font-size: clamp(0.56rem, 2.7vw, 0.8rem); line-height: 1.2;
+  overflow-wrap: anywhere; text-wrap: balance;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; /* nome enorme: corta em 2 linhas */
+}
 .membro__foto {
   display: grid; place-items: center; width: 100%; aspect-ratio: 1; border-radius: 50%; overflow: hidden;
   border: 2px solid rgba(155, 225, 90, 0.55); background: var(--destaque-suave); color: var(--destaque);
@@ -284,17 +299,72 @@ div.cartao { cursor: default; }
 .barra--fina { height: 8px; background: rgba(255, 255, 255, 0.08); }
 
 /* ---------- Frase do projeto ---------- */
+/* A frase balança de leve e tem bastante espaço acima e abaixo. */
+.frase { position: relative; padding: clamp(38px, 11vw, 64px) 0; }
 .slogan {
   text-align: center; font-family: var(--fonte-slogan); font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em;
-  font-size: clamp(0.9rem, 4.7vw, 1.5rem); line-height: 1.45; padding: 20px 8px;
+  font-size: clamp(0.9rem, 4.7vw, 1.5rem); line-height: 1.45; padding: 8px 8px 10px;
+  transform-origin: 50% 55%; animation: balancar 6s ease-in-out infinite;
 }
 .slogan em { font-style: normal; color: var(--destaque); }
+@keyframes balancar {
+  0%, 100% { transform: rotate(-1.4deg) translateY(0); }
+  50% { transform: rotate(1.4deg) translateY(-3px); }
+}
+
+
+/* ---------- Bolhas de sabão com animais ---------- */
+.bolhas { position: fixed; inset: 0; z-index: 20; overflow: hidden; pointer-events: none; }
+.bolha {
+  --tam: 110px; position: absolute; left: var(--x, 10%); bottom: 0; width: var(--tam); height: var(--tam);
+  will-change: transform; animation: bolha-subir var(--sobe, 10s) cubic-bezier(0.2, 0.55, 0.3, 1) forwards;
+}
+.bolha__disco {
+  position: absolute; inset: 0; border-radius: 50%; overflow: hidden; background: #0b3a31;
+  animation: bolha-oscilar 3.2s ease-in-out infinite alternate; animation-delay: var(--fase, 0s);
+  box-shadow: 0 0 18px rgba(170, 255, 230, 0.35), 0 10px 22px rgba(0, 0, 0, 0.3);
+}
+.bolha__disco video { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* Brilho da bolha: reflexos de luz e um aro que muda de cor, por cima do vídeo. */
+.bolha__disco::before {
+  content: ""; position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
+  background:
+    radial-gradient(ellipse 22% 14% at 28% 20%, rgba(255, 255, 255, 0.9), transparent 70%),
+    radial-gradient(ellipse 12% 8% at 72% 80%, rgba(255, 255, 255, 0.55), transparent 70%),
+    radial-gradient(circle at 50% 50%, transparent 58%, rgba(190, 255, 235, 0.28) 80%, rgba(255, 255, 255, 0.55) 100%);
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.7), inset 0 0 14px 2px rgba(255, 255, 255, 0.35);
+}
+.bolha__disco::after {
+  content: ""; position: absolute; inset: 0; border-radius: 50%; pointer-events: none; mix-blend-mode: screen; opacity: 0.9;
+  background: conic-gradient(from 40deg, rgba(255, 120, 200, 0.55), rgba(120, 200, 255, 0.55), rgba(140, 255, 170, 0.5), rgba(255, 230, 120, 0.5), rgba(255, 120, 200, 0.55));
+  -webkit-mask-image: radial-gradient(circle, transparent 55%, #000 93%); mask-image: radial-gradient(circle, transparent 55%, #000 93%);
+}
+/* Sobe devagar até uma altura sorteada (--alto, medida a partir do topo), abre com um leve crescimento. */
+@keyframes bolha-subir {
+  0%   { transform: translate3d(0, 20vh, 0) scale(0.35); opacity: 0; }
+  8%   { opacity: 1; }
+  14%  { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(0, calc(max(var(--alto, 30vh), var(--tam) + 8px) - 100vh), 0) scale(1.02); opacity: 1; }
+}
+@keyframes bolha-oscilar { from { transform: translateX(calc(var(--bal, 14px) * -1)); } to { transform: translateX(var(--bal, 14px)); } }
+/* Estouro: a bolha incha, some, e gotinhas saem para todos os lados. */
+.bolha--estoura .bolha__disco { animation: bolha-estourar 0.3s ease-out forwards; }
+@keyframes bolha-estourar { to { transform: scale(1.22); opacity: 0; } }
+.gota {
+  position: absolute; left: 50%; top: 50%; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff, rgba(170, 255, 230, 0.7)); opacity: 0;
+  animation: gota-voar 0.55s ease-out forwards;
+}
+@keyframes gota-voar {
+  0% { opacity: 0.95; transform: rotate(var(--ang)) translateX(calc(var(--tam) * 0.42)) scale(1); }
+  100% { opacity: 0; transform: rotate(var(--ang)) translateX(calc(var(--tam) * 0.42 + var(--tam) * var(--dist) * 0.7)) scale(0.3); }
+}
 
 /* ---------- Instagram e comunidade: lado a lado em qualquer tela ---------- */
 .social { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 /* Abaixo de 600 px o cartão fica estreito demais para ícone, nome e seta lado a lado: empilha o ícone sobre o nome. */
 .cartao--social .cartao__titulo { overflow-wrap: normal; }
-@media (max-width: 599px) {
+@media (max-width: 679px) {
   .social { gap: 10px; }
   .cartao--social { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; gap: 8px; padding: 16px 8px; }
   .cartao--social .cartao__seta { display: none; }
@@ -322,4 +392,6 @@ div.cartao { cursor: default; }
   .brilho:hover::before, .brilho:active::before, .brilho:focus-visible::before, .brilho:has(:focus-visible)::before { animation: none; }
   .cartao, .membro__alvo, .premio, .video__play { transition: none; }
   .cartao--acesso { animation: none; }
+  .bolhas { display: none; }
+  .slogan { animation: none; }
 }
