@@ -334,6 +334,31 @@
     pilha.appendChild(item(montado, Math.min(i, 3) * 0.04));
   });
 
+  // ---------- Toque duplo no celular ----------
+  // No computador, passar o mouse acende o bloco e o clique abre o link. No celular não há "passar o mouse": o primeiro
+  // toque acende o bloco e o segundo abre o link. Tocar em outro lugar (ou esperar alguns segundos) apaga o brilho.
+  var ligado = null, relogio = 0;
+  function desligar() {
+    if (ligado) ligado.classList.remove("brilho--ligado");
+    ligado = null;
+    window.clearTimeout(relogio);
+  }
+  function semMouse() {
+    return !!(window.matchMedia && window.matchMedia("(hover: none)").matches);
+  }
+  document.addEventListener("click", function (e) {
+    var a = e.target && e.target.closest ? e.target.closest("a.brilho") : null;
+    // Fora de um link, em tela com mouse, ou ativação por teclado/leitor de tela (detail 0): comportamento normal.
+    if (!a || !semMouse() || e.detail === 0) { if (!a) desligar(); return; }
+    if (a === ligado) { window.setTimeout(desligar, 700); return; } // segundo toque: segue o link
+    e.preventDefault();
+    desligar();
+    ligado = a;
+    a.classList.add("brilho--ligado");
+    relogio = window.setTimeout(desligar, 6000);
+  });
+  window.addEventListener("pageshow", desligar);
+
   // ---------- Bolhas de sabão com animais ----------
   // De tempos em tempos sobem poucas bolhas, cada uma com um bichinho de verdade dentro. Ficam o tempo configurado e
   // estouram. O vídeo só é pedido quando a bolha nasce e é descartado quando ela estoura, então a página fica leve.
@@ -360,8 +385,94 @@
       return nome;
     }
 
-    function estourar(bolha, v) {
+    // ---------- Sons: só quando a pessoa toca numa bolha (nunca sozinhos) ----------
+    // O "plop" e o "blub" do peixinho são gerados na hora pelo navegador (Web Audio, sem arquivo); os bichinhos têm um MP3
+    // curtinho em assets/sons/. A configuração fica em dados.js (bolhas.sons).
+    var sons = cfg.sons && typeof cfg.sons === "object" ? cfg.sons : null;
+    var mapaSons = sons && sons.bichos && typeof sons.bichos === "object" ? sons.bichos : {};
+    var volumeSom = sons && typeof sons.volume === "number" ? Math.max(0, Math.min(1, sons.volume)) : 0.6;
+    var som = { ligado: true, ctx: null, arquivos: {} };
+    try { if (window.localStorage.getItem("zoop-som") === "0") som.ligado = false; } catch (erro) { /* sem armazenamento: segue ligado */ }
+
+    function contextoDeSom() {
+      if (!som.ctx) {
+        var Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return null;
+        try { som.ctx = new Ctx(); } catch (erro) { return null; }
+      }
+      if (som.ctx.state === "suspended" && som.ctx.resume) { try { som.ctx.resume(); } catch (erro) { /* ignora */ } }
+      return som.ctx;
+    }
+    // Um "blip" de água: seno que sobe ou desce de tom, com subida e queda suaves.
+    function blip(c, inicio, de, para, dur, vol) {
+      var o = c.createOscillator(), g = c.createGain();
+      o.type = "sine";
+      o.frequency.setValueAtTime(de, inicio);
+      o.frequency.exponentialRampToValueAtTime(para, inicio + dur);
+      g.gain.setValueAtTime(0.0001, inicio);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0002, vol), inicio + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, inicio + dur + 0.03);
+      o.connect(g); g.connect(c.destination);
+      o.start(inicio); o.stop(inicio + dur + 0.05);
+    }
+    function plop() {
+      var c = contextoDeSom(); if (!c) return;
+      blip(c, c.currentTime, 900, 260, 0.09, 0.32 * volumeSom);
+    }
+    function blub() {
+      var c = contextoDeSom(); if (!c) return;
+      var t = c.currentTime;
+      blip(c, t + 0.06, 300, 620, 0.08, 0.26 * volumeSom);
+      blip(c, t + 0.19, 380, 760, 0.07, 0.2 * volumeSom);
+    }
+    function somDoBicho(nome) {
+      if (nome === "blub") { blub(); return; }
+      if (typeof nome !== "string" || !/^[a-z0-9-]{1,40}$/.test(nome)) return;
+      var audio = som.arquivos[nome];
+      if (!audio) { audio = som.arquivos[nome] = new Audio("assets/sons/" + nome + ".mp3"); }
+      audio.volume = volumeSom;
+      try { audio.currentTime = 0; } catch (erro) { /* ainda não carregou */ }
+      var p = audio.play();
+      if (p && p.catch) p.catch(function () {});
+    }
+    function darSom(animal) {
+      if (!som.ligado) return;
+      plop();
+      var bicho = mapaSons[animal];
+      if (bicho) window.setTimeout(function () { somDoBicho(bicho); }, 90);
+    }
+
+    // Botão discreto no fim da página para ligar ou desligar o som (só existe se houver sons configurados).
+    if (sons) {
+      var fim = document.querySelector(".fim");
+      if (fim && fim.parentNode) {
+        var linha = criar("p", "som");
+        var botao = criar("button", "som__botao");
+        botao.type = "button";
+        var icone_ = icone(som.ligado ? "som" : "mudo");
+        var texto = criar("span");
+        botao.appendChild(icone_); botao.appendChild(texto);
+        var atualizar = function () {
+          icone_.firstChild.setAttribute("href", som.ligado ? "#som" : "#mudo");
+          texto.textContent = "Som ao tocar nas bolhas: " + (som.ligado ? "ligado" : "desligado");
+          botao.setAttribute("aria-pressed", som.ligado ? "true" : "false");
+        };
+        botao.addEventListener("click", function () {
+          som.ligado = !som.ligado;
+          try { window.localStorage.setItem("zoop-som", som.ligado ? "1" : "0"); } catch (erro) { /* ignora */ }
+          atualizar();
+          if (som.ligado) plop(); // confirma o som ligado (e libera o áudio no iPhone)
+        });
+        atualizar();
+        linha.appendChild(botao);
+        fim.parentNode.insertBefore(linha, fim);
+      }
+    }
+
+    function estourar(bolha, v, animal, porToque) {
+      if (bolha.classList.contains("bolha--estoura")) return;
       bolha.classList.add("bolha--estoura");
+      if (porToque) darSom(animal); // som só quando a pessoa tocou
       for (var i = 0; i < 9; i++) {
         var gota = criar("i", "gota");
         gota.style.setProperty("--ang", (i * 40 + Math.random() * 20) + "deg");
@@ -379,7 +490,8 @@
     var embaralhar = function (l) { for (var i = l.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = l[i]; l[i] = l[j]; l[j] = t; } return l; };
 
     function nascer(indice, total, lado, alturaFinal) {
-      var v = videoAnimal(sortear());
+      var nomeAnimal = sortear();
+      var v = videoAnimal(nomeAnimal);
       if (!v) return;
       var largura = window.innerWidth || 360;
       var coluna = pilha.getBoundingClientRect();
@@ -412,16 +524,35 @@
       disco.appendChild(v);
       bolha.appendChild(disco);
 
-      var emTela = false;
-      v.addEventListener("loadeddata", function () {
-        if (emTela) return;
-        emTela = true;
-        camada.appendChild(bolha);
-        tocar(v);
-        window.setTimeout(function () { estourar(bolha, v); }, duracao);
+      // O Safari do iPhone só baixa o vídeo depois que o play() é chamado (mesmo mudo). Por isso a bolha entra na tela
+      // escondida e o vídeo começa a tocar na hora; ela só aparece quando o vídeo realmente começa a rodar.
+      var ativa = false, descartada = false, temporizador = 0;
+      camada.appendChild(bolha);
+      bolha.classList.add("bolha--espera");
+      function mostrar() {
+        if (ativa || descartada) return;
+        ativa = true;
+        bolha.classList.remove("bolha--espera");
+        temporizador = window.setTimeout(function () { estourar(bolha, v, nomeAnimal, false); }, duracao);
+      }
+      // Tocar na bolha estoura na hora (com som, se estiver ligado).
+      bolha.addEventListener("click", function () {
+        if (!ativa || descartada) return;
+        window.clearTimeout(temporizador);
+        estourar(bolha, v, nomeAnimal, true);
       });
-      // Se o vídeo não chegar, a bolha simplesmente não aparece.
-      v.addEventListener("error", function () { v.removeAttribute("src"); });
+      function descartar() {
+        if (ativa || descartada) return;
+        descartada = true;
+        v.pause(); v.removeAttribute("src"); v.load();
+        if (bolha.parentNode) bolha.parentNode.removeChild(bolha);
+      }
+      v.addEventListener("playing", mostrar);
+      v.addEventListener("timeupdate", function () { if (v.currentTime > 0) mostrar(); });
+      v.addEventListener("error", descartar);
+      window.setTimeout(descartar, 5000); // não começou a tocar em 5 s (rede lenta, modo de economia): desiste sem barulho
+      var p = v.play();
+      if (p && p.catch) p.catch(descartar);
     }
 
     // Cada rodada espalha as bolhas ao longo do intervalo (uma de cada vez, em momentos diferentes), em vez de soltar todas

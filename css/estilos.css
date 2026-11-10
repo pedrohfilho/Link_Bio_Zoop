@@ -61,7 +61,7 @@ a { color: inherit; text-decoration: none; }
 /* ---------- Fundo ---------- */
 /* Verde profundo com brilho no topo e nos cantos e um granulado bem leve, para não ficar chapado. */
 .fundo {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 0; pointer-events: none;
   background:
     radial-gradient(90% 55% at 50% -8%, rgba(46, 160, 110, 0.55), transparent 70%),
     radial-gradient(70% 45% at 100% 38%, rgba(155, 225, 90, 0.14), transparent 70%),
@@ -69,7 +69,7 @@ a { color: inherit; text-decoration: none; }
     linear-gradient(180deg, #07473b 0%, #05362f 45%, #031f1b 100%);
 }
 .fundo::after {
-  content: ""; position: absolute; inset: 0; opacity: 0.09; mix-blend-mode: soft-light;
+  content: ""; position: absolute; top: 0; right: 0; bottom: 0; left: 0; opacity: 0.09; mix-blend-mode: soft-light;
   background-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%3E%3Cfilter%20id%3D'n'%3E%3CfeTurbulence%20type%3D'fractalNoise'%20baseFrequency%3D'.85'%20numOctaves%3D'2'%20stitchTiles%3D'stitch'%2F%3E%3CfeColorMatrix%20values%3D'0%200%200%200%201%20%200%200%200%200%201%20%200%200%200%200%201%20%200%200%200%20.55%200'%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D'100%25'%20height%3D'100%25'%20filter%3D'url(%23n)'%2F%3E%3C%2Fsvg%3E");
 }
 
@@ -115,16 +115,13 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* ---------- Logo ---------- */
-/* A imagem tem fundo escuro próprio: o blend "lighten" faz esse fundo sumir dentro do verde da página, e a máscara
-   suaviza as bordas. Por isso nenhum ancestral da logo pode criar contexto de empilhamento (z-index, opacity...). */
-.marca {
-  margin: 0; position: relative; aspect-ratio: 2 / 1; overflow: hidden; mix-blend-mode: lighten;
-}
+/* A logo é uma imagem com fundo transparente (o fundo escuro original foi removido), então funciona igual em qualquer
+   navegador, inclusive no Safari do iPhone, sem depender de modos de mistura. O recorte é maior que a caixa para
+   aproveitar a área útil da imagem. */
+.marca { margin: 0; position: relative; aspect-ratio: 2 / 1; overflow: hidden; }
 .marca img {
   position: absolute; left: 50%; top: 50%; width: 132%; height: auto; max-width: none;
   transform: translate(-50%, -49%);
-  -webkit-mask-image: radial-gradient(ellipse 58% 60% at 50% 50%, #000 72%, transparent 100%);
-  mask-image: radial-gradient(ellipse 58% 60% at 50% 50%, #000 72%, transparent 100%);
 }
 .topo { padding-block: max(8px, env(safe-area-inset-top, 0px)) 0; }
 
@@ -151,7 +148,7 @@ a { color: inherit; text-decoration: none; }
   opacity: 0; transition: opacity 0.25s ease;
 }
 .brilho::after {
-  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  content: ""; position: absolute; top: 0; right: 0; bottom: 0; left: 0; border-radius: inherit; pointer-events: none;
   box-shadow: 0 0 0 rgba(var(--halo), 0); transition: box-shadow 0.3s ease;
 }
 .brilho--lima      { --c1: #9be15a; --c2: #e4ffb8; --halo: 155, 225, 90; }
@@ -168,9 +165,22 @@ a { color: inherit; text-decoration: none; }
   .brilho:hover::before { opacity: 1; animation: girar 2.6s linear infinite; }
   .brilho:hover::after { box-shadow: 0 0 36px rgba(var(--halo), 0.5); }
 }
-/* No toque, o brilho acende enquanto o dedo está sobre o bloco; no teclado, enquanto ele está em foco. */
-.brilho:active::before, .brilho:focus-visible::before, .brilho:has(:focus-visible)::before { opacity: 1; animation: girar 2.6s linear infinite; }
-.brilho:active::after, .brilho:focus-visible::after, .brilho:has(:focus-visible)::after { box-shadow: 0 0 36px rgba(var(--halo), 0.5); }
+/* No celular não existe "passar o mouse": o primeiro toque acende o bloco (classe brilho--ligado, posta por js/app.js) e o
+   segundo toque abre o link. No teclado, o brilho acende enquanto o bloco está em foco. */
+.brilho:active::before, .brilho--ligado::before { opacity: 1; animation: girar 2.6s linear infinite; }
+.brilho:focus-visible::before { opacity: 1; animation: girar 2.6s linear infinite; }
+.brilho:has(:focus-visible)::before { opacity: 1; animation: girar 2.6s linear infinite; }
+.brilho:active::after, .brilho--ligado::after { box-shadow: 0 0 36px rgba(var(--halo), 0.5); }
+.brilho:focus-visible::after { box-shadow: 0 0 36px rgba(var(--halo), 0.5); }
+.brilho:has(:focus-visible)::after { box-shadow: 0 0 36px rgba(var(--halo), 0.5); }
+
+/* O estado "ligado" (primeiro toque) repete o que o mouse em cima faz no computador. */
+.cartao.brilho--ligado { transform: translateY(-3px); background: var(--superficie-forte); }
+.cartao--acesso.brilho--ligado { background: #b0ee74; }
+.membro__alvo.brilho--ligado { transform: scale(1.1); }
+.membro__alvo.brilho--ligado .membro__legenda { opacity: 1; transform: translate(-50%, 0); }
+.membro:first-child .membro__alvo.brilho--ligado .membro__legenda, .membro:last-child .membro__alvo.brilho--ligado .membro__legenda { transform: translate(0, 0); }
+.premio.brilho--ligado { transform: translateY(-2px); }
 
 /* ---------- Cartões (formulários, Instagram, comunidade) ---------- */
 .cartao {
@@ -227,11 +237,11 @@ div.cartao { cursor: default; }
 /* Vídeo */
 .video { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 16px; overflow: hidden; background: rgba(0, 0, 0, 0.28); border: 1px solid var(--linha); }
 .video__abrir, .video__vazio {
-  position: absolute; inset: 0; width: 100%; height: 100%; display: grid; place-items: center; padding: 0; border: 0;
+  position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; display: grid; place-items: center; padding: 0; border: 0;
   background-color: transparent; background-size: cover; background-position: center;
 }
 .video__abrir { cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.video__abrir::before { content: ""; position: absolute; inset: 0; background: rgba(0, 0, 0, 0.25); }
+.video__abrir::before { content: ""; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: rgba(0, 0, 0, 0.25); }
 .video__play {
   position: relative; width: clamp(52px, 14vw, 68px); aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center;
   background: var(--destaque); color: var(--sobre-destaque); box-shadow: 0 0 0 8px rgba(155, 225, 90, 0.16);
@@ -239,7 +249,7 @@ div.cartao { cursor: default; }
 }
 .video__play svg { width: 46%; height: 46%; margin-left: 6%; }
 @media (hover: hover) and (pointer: fine) { .video__abrir:hover .video__play { transform: scale(1.08); } }
-.video__player { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.video__player { position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; border: 0; }
 
 /* Equipe: sempre numa fileira só (até 5 por linha), do celular ao computador. */
 .equipe { --espaco: clamp(6px, 2.4vw, 16px); display: flex; flex-wrap: wrap; justify-content: center; gap: 20px var(--espaco); }
@@ -314,20 +324,24 @@ div.cartao { cursor: default; }
 
 
 /* ---------- Bolhas de sabão com animais ---------- */
-.bolhas { position: fixed; inset: 0; z-index: 20; overflow: hidden; pointer-events: none; }
+.bolhas { position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 20; overflow: hidden; pointer-events: none; }
 .bolha {
   --tam: 110px; position: absolute; left: var(--x, 10%); bottom: 0; width: var(--tam); height: var(--tam);
   will-change: transform; animation: bolha-subir var(--sobe, 10s) cubic-bezier(0.2, 0.55, 0.3, 1) forwards;
 }
+/* Esperando o vídeo começar a tocar: fica no lugar, quase invisível (mas "na tela", para o Safari deixar o vídeo rodar). */
+.bolha--espera { animation: none; opacity: 0.01; }
+/* Depois que a bolha aparece, dá para tocar nela: estoura na hora (e, com o som ligado, faz plop). */
+.bolha:not(.bolha--espera):not(.bolha--estoura) { pointer-events: auto; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .bolha__disco {
-  position: absolute; inset: 0; border-radius: 50%; overflow: hidden; background: #0b3a31;
+  position: absolute; top: 0; right: 0; bottom: 0; left: 0; border-radius: 50%; overflow: hidden; background: #0b3a31;
   animation: bolha-oscilar 3.2s ease-in-out infinite alternate; animation-delay: var(--fase, 0s);
   box-shadow: 0 0 18px rgba(170, 255, 230, 0.35), 0 10px 22px rgba(0, 0, 0, 0.3);
 }
 .bolha__disco video { display: block; width: 100%; height: 100%; object-fit: cover; }
 /* Brilho da bolha: reflexos de luz e um aro que muda de cor, por cima do vídeo. */
 .bolha__disco::before {
-  content: ""; position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
+  content: ""; position: absolute; top: 0; right: 0; bottom: 0; left: 0; border-radius: 50%; pointer-events: none;
   background:
     radial-gradient(ellipse 22% 14% at 28% 20%, rgba(255, 255, 255, 0.9), transparent 70%),
     radial-gradient(ellipse 12% 8% at 72% 80%, rgba(255, 255, 255, 0.55), transparent 70%),
@@ -335,7 +349,7 @@ div.cartao { cursor: default; }
   box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.7), inset 0 0 14px 2px rgba(255, 255, 255, 0.35);
 }
 .bolha__disco::after {
-  content: ""; position: absolute; inset: 0; border-radius: 50%; pointer-events: none; mix-blend-mode: screen; opacity: 0.9;
+  content: ""; position: absolute; top: 0; right: 0; bottom: 0; left: 0; border-radius: 50%; pointer-events: none; mix-blend-mode: screen; opacity: 0.9;
   background: conic-gradient(from 40deg, rgba(255, 120, 200, 0.55), rgba(120, 200, 255, 0.55), rgba(140, 255, 170, 0.5), rgba(255, 230, 120, 0.5), rgba(255, 120, 200, 0.55));
   -webkit-mask-image: radial-gradient(circle, transparent 55%, #000 93%); mask-image: radial-gradient(circle, transparent 55%, #000 93%);
 }
@@ -359,6 +373,16 @@ div.cartao { cursor: default; }
   0% { opacity: 0.95; transform: rotate(var(--ang)) translateX(calc(var(--tam) * 0.42)) scale(1); }
   100% { opacity: 0; transform: rotate(var(--ang)) translateX(calc(var(--tam) * 0.42 + var(--tam) * var(--dist) * 0.7)) scale(0.3); }
 }
+
+/* Botão de som no fim da página: discreto. */
+.som { display: flex; justify-content: center; margin: 10px 0 0; }
+.som__botao {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 8px 14px; border-radius: 999px; cursor: pointer;
+  background: rgba(255, 255, 255, 0.06); border: 1px solid var(--linha); color: var(--texto-suave);
+  font-family: var(--fonte-texto, inherit); font-size: 0.82rem; line-height: 1.2; -webkit-tap-highlight-color: transparent;
+}
+.som__botao svg { width: 18px; height: 18px; flex: none; color: var(--destaque); }
+@media (hover: hover) and (pointer: fine) { .som__botao:hover { background: rgba(255, 255, 255, 0.1); color: var(--texto); } }
 
 /* ---------- Instagram e comunidade: lado a lado em qualquer tela ---------- */
 .social { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
@@ -389,7 +413,8 @@ div.cartao { cursor: default; }
 @media (prefers-reduced-motion: reduce) {
   .deco { animation: none; }
   .reveal { transition: none; }
-  .brilho:hover::before, .brilho:active::before, .brilho:focus-visible::before, .brilho:has(:focus-visible)::before { animation: none; }
+  .brilho:hover::before, .brilho:active::before, .brilho--ligado::before, .brilho:focus-visible::before { animation: none; }
+  .brilho:has(:focus-visible)::before { animation: none; }
   .cartao, .membro__alvo, .premio, .video__play { transition: none; }
   .cartao--acesso { animation: none; }
   .bolhas { display: none; }

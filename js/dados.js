@@ -17,6 +17,19 @@ window.DADOS_LINK = {
     intervalo: 12,
     duracao: 6,
     primeiraApos: 2,
+    // Sons (só tocam quando a pessoa toca numa bolha; nunca sozinhos; há um botão no fim da página para desligar). volume de 0 a 1. Cada bichinho aponta para um
+    // arquivo de assets/sons/ (sem o .mp3); "blub" é o som de água gerado pelo navegador. Quem não está na lista só faz "plop".
+    sons: {
+      volume: 0.6,
+      bichos: {
+        cachorro: "cachorro",
+        gato: "gato", "gato-siames": "gato", "gato-bebendo": "gato",
+        pony: "cavalo",
+        periquito: "passarinho", "periquito-comendo": "passarinho", calopsita: "passarinho",
+        porquinho: "porquinho",
+        "peixinho-dourado": "blub"
+      }
+    },
     animais: [
       "cachorro", "calopsita", "coelho", "coruja", "gato", "gato-bebendo", "gato-siames", "hamster", "jiboia", "patinhos", "peixinho-dourado", "periquito", "periquito-comendo", "pinguim", "pony", "porquinho"
     ]
@@ -48,7 +61,7 @@ window.DADOS_LINK = {
         { nome: "Cauã Oliveira", funcao: "", foto: "", linkedin: "" },
         { nome: "Kauê Barreto", funcao: "", foto: "", linkedin: "" },
         { nome: "Lucas Fiss", funcao: "", foto: "", linkedin: "" },
-        { nome: "Murilo Aquino", funcao: "", foto: "", linkedin: "" },
+        { nome: "Murilo Aquino", funcao: "", foto: "assets/equipe/murilo-aquino.webp", linkedin: "https://www.linkedin.com/in/aquinozz/" },
         { nome: "Pedro Henrique", funcao: "", foto: "assets/equipe/pedro-henrique.webp", linkedin: "https://www.linkedin.com/in/pedro-henrique-211b70346/" }
       ]
     },

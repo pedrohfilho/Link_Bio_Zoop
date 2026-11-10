@@ -41,7 +41,7 @@ Os pontos principais da arquitetura:
 - **Site estático:** não existe servidor próprio nem banco de dados. A hospedagem apenas entrega os arquivos, o que deixa a página rápida, barata e difícil de sair do ar.
 - **Dados separados do visual:** mais adiante, o mesmo conteúdo pode vir de uma API ou de um banco, sem mudar a aparência.
 - **Segurança:** todo texto entra como texto puro e só endereços `http` e `https` viram link, então um dado errado nunca vira código. A política de conteúdo (`netlify.toml`) só permite o próprio site, as fontes do Google e o player do YouTube.
-- **Leveza:** o vídeo do YouTube só carrega quando a pessoa toca. Os animais são vídeos minúsculos (de 20 a 90 KB), pedidos só quando aparecem e descartados depois.
+- **Leveza:** o vídeo do YouTube só carrega quando a pessoa toca. Os animais são vídeos minúsculos (de 20 a 90 KB), pedidos só quando aparecem e descartados depois. Os sons (50 KB no total) só carregam quando a pessoa toca numa bolha e nunca tocam sozinhos.
 - **Responsivo:** uma coluna central, de celulares estreitos a monitores ultrawide.
 
 ## Modelagem
@@ -134,7 +134,7 @@ link_bioZoop/
 ├── css/estilos.css     Aparência: cores, brilhos, animações e responsividade
 ├── js/dados.js         Conteúdo: tudo o que aparece vem daqui
 ├── js/app.js           Monta a página a partir dos dados
-├── assets/             Logo, ícone, fotos da equipe e vídeos dos animais
+├── assets/             Logo, ícone, fotos da equipe, vídeos e sons dos animais
 ├── netlify.toml        Segurança e cache na hospedagem (Netlify)
 └── vercel.json         O mesmo, para quem preferir a Vercel
 ```
@@ -145,4 +145,4 @@ HTML, CSS e JavaScript puros, sem build e sem dependências. Hospedagem no Netli
 
 ## Créditos
 
-Os vídeos de animais vêm da Wikimedia Commons, com licença livre. Autores, licenças e endereços de cada um estão em [assets/animais/CREDITOS.md](assets/animais/CREDITOS.md).
+Os vídeos e os sons de animais vêm da Wikimedia Commons, com licença livre. Autores, licenças e endereços estão em [assets/animais/CREDITOS.md](assets/animais/CREDITOS.md) (vídeos) e [assets/sons/CREDITOS.md](assets/sons/CREDITOS.md) (sons).
