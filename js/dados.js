@@ -59,7 +59,7 @@ window.DADOS_LINK = {
       // Cada pessoa: nome, função, foto e o LinkedIn (o clique na foto leva para lá).
       membros: [
         { nome: "Cauã Oliveira", funcao: "", foto: "", linkedin: "" },
-        { nome: "Kauê Barreto", funcao: "", foto: "", linkedin: "" },
+        { nome: "Kauê Barreto", funcao: "", foto: "assets/equipe/kaue-barreto.webp", linkedin: "https://www.linkedin.com/in/kauesabarreto/" },
         { nome: "Lucas Fiss", funcao: "", foto: "", linkedin: "" },
         { nome: "Murilo Aquino", funcao: "", foto: "assets/equipe/murilo-aquino.webp", linkedin: "https://www.linkedin.com/in/aquinozz/" },
         { nome: "Pedro Henrique", funcao: "", foto: "assets/equipe/pedro-henrique.webp", linkedin: "https://www.linkedin.com/in/pedro-henrique-211b70346/" }
