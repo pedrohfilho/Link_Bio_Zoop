@@ -1,0 +1,325 @@
+/* Link na bio do Zoop.
+   Uma coluna só, feita para o celular: logo, formulários, vídeo, equipe, premiações, a frase do projeto e os contatos.
+   O conteúdo vem de js/dados.js; aqui fica só a aparência. */
+
+@property --giro {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+:root {
+  color-scheme: dark;
+  --fonte-titulo: "Bricolage Grotesque", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --fonte-texto: "Instrument Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --fonte-slogan: "Plus Jakarta Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --fonte-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --fundo: #031f1b;
+  --superficie: rgba(255, 255, 255, 0.06);
+  --superficie-forte: rgba(255, 255, 255, 0.1);
+  --linha: rgba(255, 255, 255, 0.14);
+  --texto: #f2faf4;
+  --texto-suave: #c3dcd2;
+  --texto-mudo: #9dbfb3;
+  --destaque: #9be15a;
+  --destaque-suave: rgba(155, 225, 90, 0.14);
+  --sobre-destaque: #06241f;
+
+  --margem: clamp(20px, 6vw, 28px);
+  --largura: 520px;
+  --raio-cartao: 20px;
+  --raio-painel: 24px;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: var(--fonte-texto);
+  font-size: 1rem;
+  line-height: 1.5;
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, p, ul { margin: 0; }
+ul { padding: 0; list-style: none; }
+svg { display: block; fill: currentColor; }
+img { display: block; max-width: 100%; }
+button { font: inherit; color: inherit; }
+a { color: inherit; text-decoration: none; }
+
+:focus-visible { outline: 3px solid var(--destaque); outline-offset: 3px; border-radius: 12px; }
+
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+/* ---------- Fundo ---------- */
+/* Verde profundo com brilho no topo e nos cantos e um granulado bem leve, para não ficar chapado. */
+.fundo {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(90% 55% at 50% -8%, rgba(46, 160, 110, 0.55), transparent 70%),
+    radial-gradient(70% 45% at 100% 38%, rgba(155, 225, 90, 0.14), transparent 70%),
+    radial-gradient(70% 50% at 0% 85%, rgba(46, 160, 110, 0.28), transparent 70%),
+    linear-gradient(180deg, #07473b 0%, #05362f 45%, #031f1b 100%);
+}
+.fundo::after {
+  content: ""; position: absolute; inset: 0; opacity: 0.09; mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%3E%3Cfilter%20id%3D'n'%3E%3CfeTurbulence%20type%3D'fractalNoise'%20baseFrequency%3D'.85'%20numOctaves%3D'2'%20stitchTiles%3D'stitch'%2F%3E%3CfeColorMatrix%20values%3D'0%200%200%200%201%20%200%200%200%200%201%20%200%200%200%200%201%20%200%200%200%20.55%200'%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D'100%25'%20height%3D'100%25'%20filter%3D'url(%23n)'%2F%3E%3C%2Fsvg%3E");
+}
+
+.pagina { position: relative; overflow: hidden; min-height: 100vh; min-height: 100svh; }
+
+.container {
+  position: relative; width: 100%; max-width: calc(var(--largura) + 2 * var(--margem)); margin-inline: auto;
+  padding-left: max(var(--margem), env(safe-area-inset-left, 0px));
+  padding-right: max(var(--margem), env(safe-area-inset-right, 0px));
+}
+
+/* ---------- Animais de decoração ---------- */
+/* No celular os animais espiam pelas bordas, ao lado dos cartões; no computador ficam soltos nas laterais. */
+.deco {
+  position: absolute; pointer-events: none; color: var(--destaque); opacity: 0.2;
+  width: calc(var(--k, 1) * clamp(40px, 10vw, 84px)); height: calc(var(--k, 1) * clamp(40px, 10vw, 84px));
+  transform: rotate(var(--rot, 0deg));
+  animation: flutuar 8s ease-in-out infinite; animation-delay: var(--atraso, 0s);
+}
+.deco--1 { left: -16px;  top: 24%; --rot: -14deg; --k: 1.1; }
+.deco--2 { right: -14px; top: 33%; --rot: 12deg; --atraso: -3s; }
+.deco--3 { left: -14px;  top: 48%; --rot: 10deg; --k: 1.1; --atraso: -5s; }
+.deco--4 { right: -14px; top: 62%; --rot: -12deg; --atraso: -2s; }
+.deco--5 { left: -12px;  top: 76%; --rot: 16deg; --atraso: -4s; }
+.deco--6 { right: -12px; top: 88%; --rot: -18deg; --k: 0.95; --atraso: -6s; }
+.deco--7 { right: -18px; top: 9%;  --rot: 14deg; --atraso: -1s; }
+.deco--8 { left: -16px;  top: 94%; --rot: -10deg; --atraso: -7s; }
+@media (min-width: 900px) {
+  .deco { --k: 1.25; opacity: 0.22; }
+  .deco--1 { left: 7%;  right: auto; top: 14%; }
+  .deco--2 { right: 9%; left: auto;  top: 24%; }
+  .deco--3 { left: 15%; right: auto; top: 38%; }
+  .deco--4 { right: 15%; left: auto; top: 52%; }
+  .deco--5 { left: 8%;  right: auto; top: 66%; }
+  .deco--6 { right: 8%; left: auto;  top: 80%; }
+  .deco--7 { right: 19%; left: auto; top: 6%; }
+  .deco--8 { left: 18%; right: auto; top: 88%; }
+}
+@keyframes flutuar {
+  0%, 100% { transform: translateY(0) rotate(var(--rot, 0deg)); }
+  50% { transform: translateY(-9px) rotate(var(--rot, 0deg)); }
+}
+
+/* ---------- Logo ---------- */
+/* A imagem tem fundo escuro próprio: o blend "lighten" faz esse fundo sumir dentro do verde da página, e a máscara
+   suaviza as bordas. Por isso nenhum ancestral da logo pode criar contexto de empilhamento (z-index, opacity...). */
+.marca {
+  margin: 0; position: relative; aspect-ratio: 2 / 1; overflow: hidden; mix-blend-mode: lighten;
+}
+.marca img {
+  position: absolute; left: 50%; top: 50%; width: 132%; height: auto; max-width: none;
+  transform: translate(-50%, -49%);
+  -webkit-mask-image: radial-gradient(ellipse 58% 60% at 50% 50%, #000 72%, transparent 100%);
+  mask-image: radial-gradient(ellipse 58% 60% at 50% 50%, #000 72%, transparent 100%);
+}
+.topo { padding-block: max(8px, env(safe-area-inset-top, 0px)) 0; }
+
+/* ---------- Pilha de blocos ---------- */
+.pilha { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; padding-block: 4px 0; }
+.fim { height: max(32px, env(safe-area-inset-bottom, 0px)); }
+
+/* Entrada suave: só esconde se o script confirmar que consegue revelar depois. */
+.reveal { transition: opacity 0.6s ease, transform 0.6s ease; transition-delay: var(--atraso, 0s); }
+.js .reveal:not(.visivel) { opacity: 0; transform: translateY(20px); }
+
+/* ---------- Brilho ao redor (passar o mouse, tocar ou focar) ----------
+   Cada bloco define as cores do seu brilho. O anel gira ao redor do bloco e um halo suave acende por fora. */
+.brilho {
+  position: relative;
+  --c1: #9be15a; --c2: #e4ffb8; --halo: 155, 225, 90;
+}
+.brilho::before {
+  content: ""; position: absolute; inset: -2px; border-radius: inherit; padding: 2px; pointer-events: none;
+  background: conic-gradient(from var(--giro), var(--c1), var(--c2), var(--c3, var(--c1)), var(--c4, var(--c2)), var(--c1));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: 0; transition: opacity 0.25s ease;
+}
+.brilho::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  box-shadow: 0 0 0 rgba(var(--halo), 0); transition: box-shadow 0.3s ease;
+}
+.brilho--lima      { --c1: #9be15a; --c2: #e4ffb8; --halo: 155, 225, 90; }
+.brilho--vermelho  { --c1: #ff1f3d; --c2: #ff9aa8; --halo: 255, 31, 61; }
+.brilho--linkedin  { --c1: #0a66c2; --c2: #7cc0ff; --halo: 10, 102, 194; }
+.brilho--instagram { --c1: #f58529; --c2: #dd2a7b; --c3: #8134af; --c4: #515bd4; --halo: 221, 42, 123; }
+.brilho--whatsapp  { --c1: #25d366; --c2: #9dffc4; --halo: 37, 211, 102; }
+.brilho--ouro      { --c1: #ffc83d; --c2: #fff1b0; --halo: 255, 200, 61; }
+.brilho--acesso    { --c1: #ffffff; --c2: #e4ffb8; --halo: 228, 255, 184; }
+
+@keyframes girar { to { --giro: 360deg; } }
+
+@media (hover: hover) and (pointer: fine) {
+  .brilho:hover::before { opacity: 1; animation: girar 2.6s linear infinite; }
+  .brilho:hover::after { box-shadow: 0 0 36px rgba(var(--halo), 0.5); }
+}
+/* No toque, o brilho acende enquanto o dedo está sobre o bloco; no teclado, enquanto ele está em foco. */
+.brilho:active::before, .brilho:focus-visible::before, .brilho:has(:focus-visible)::before { opacity: 1; animation: girar 2.6s linear infinite; }
+.brilho:active::after, .brilho:focus-visible::after, .brilho:has(:focus-visible)::after { box-shadow: 0 0 36px rgba(var(--halo), 0.5); }
+
+/* ---------- Cartões (formulários, Instagram, comunidade) ---------- */
+.cartao {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; width: 100%;
+  min-height: 74px; padding: 14px 16px; text-align: left; cursor: pointer;
+  background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--raio-cartao);
+  transition: transform 0.18s ease, background 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+div.cartao { cursor: default; }
+@media (hover: hover) and (pointer: fine) { .cartao:hover { transform: translateY(-3px); background: var(--superficie-forte); } }
+.cartao:active { transform: scale(0.985); }
+.cartao__icone { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: var(--destaque-suave); color: var(--destaque); }
+.cartao__icone svg { width: 26px; height: 26px; }
+.cartao__titulo { font-family: var(--fonte-titulo); font-weight: 700; font-size: 1.1rem; line-height: 1.2; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.cartao__seta { width: 22px; height: 22px; color: var(--destaque); }
+
+/* Botão de acesso ao sistema: verde cheio, o primeiro da pilha, com um brilho suave e parado para chamar a atenção. */
+.cartao--acesso {
+  min-height: 68px; background: var(--destaque); color: var(--sobre-destaque); border-color: transparent;
+  box-shadow: 0 0 0 4px rgba(155, 225, 90, 0.16), 0 12px 32px rgba(155, 225, 90, 0.26);
+  animation: pulsar 3.4s ease-in-out infinite;
+}
+@media (hover: hover) and (pointer: fine) { .cartao--acesso:hover { background: #b0ee74; } }
+.cartao--acesso .cartao__icone { background: rgba(6, 36, 31, 0.16); color: var(--sobre-destaque); }
+.cartao--acesso .cartao__titulo { font-size: 1.2rem; font-weight: 800; }
+.cartao--acesso .cartao__seta { color: var(--sobre-destaque); }
+@keyframes pulsar {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(155, 225, 90, 0.16), 0 12px 32px rgba(155, 225, 90, 0.26); }
+  50% { box-shadow: 0 0 0 9px rgba(155, 225, 90, 0.1), 0 14px 38px rgba(155, 225, 90, 0.36); }
+}
+
+/* A cor do ícone acompanha o brilho de cada cartão. */
+.brilho--instagram .cartao__icone, .cartao.brilho--instagram .cartao__icone { background: rgba(221, 42, 123, 0.16); color: #ff6fae; }
+.brilho--whatsapp .cartao__icone { background: rgba(37, 211, 102, 0.16); color: #3be67f; }
+.brilho--instagram .cartao__seta { color: #ff6fae; }
+.brilho--whatsapp .cartao__seta { color: #3be67f; }
+
+/* ---------- Painéis (vídeo, equipe, premiações) ---------- */
+.painel {
+  background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--raio-painel);
+  padding: clamp(14px, 4vw, 26px); display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px;
+}
+.painel__titulo { font-family: var(--fonte-titulo); font-weight: 700; font-size: 1.1rem; line-height: 1.2; letter-spacing: -0.01em; }
+.rotulo { font-family: var(--fonte-mono); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--destaque); }
+
+/* Vídeo */
+.video { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 16px; overflow: hidden; background: rgba(0, 0, 0, 0.28); border: 1px solid var(--linha); }
+.video__abrir, .video__vazio {
+  position: absolute; inset: 0; width: 100%; height: 100%; display: grid; place-items: center; padding: 0; border: 0;
+  background-color: transparent; background-size: cover; background-position: center;
+}
+.video__abrir { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.video__abrir::before { content: ""; position: absolute; inset: 0; background: rgba(0, 0, 0, 0.25); }
+.video__play {
+  position: relative; width: clamp(52px, 14vw, 68px); aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center;
+  background: var(--destaque); color: var(--sobre-destaque); box-shadow: 0 0 0 8px rgba(155, 225, 90, 0.16);
+  transition: transform 0.2s ease;
+}
+.video__play svg { width: 46%; height: 46%; margin-left: 6%; }
+@media (hover: hover) and (pointer: fine) { .video__abrir:hover .video__play { transform: scale(1.08); } }
+.video__player { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+/* Equipe: sempre numa fileira só (até 5 por linha), do celular ao computador. */
+.equipe { --espaco: clamp(6px, 2.4vw, 16px); display: flex; flex-wrap: wrap; justify-content: center; gap: 20px var(--espaco); }
+.membro { flex: 0 0 calc((100% - 4 * var(--espaco)) / 5); min-width: 0; }
+.membro__alvo {
+  position: relative; display: block; width: 100%; border-radius: 50%; -webkit-tap-highlight-color: transparent;
+  transition: transform 0.2s ease;
+}
+@media (hover: hover) and (pointer: fine) { .membro__alvo:hover { transform: scale(1.1); } }
+.membro__alvo:active { transform: scale(1.06); }
+.membro__foto {
+  display: grid; place-items: center; width: 100%; aspect-ratio: 1; border-radius: 50%; overflow: hidden;
+  border: 2px solid rgba(155, 225, 90, 0.55); background: var(--destaque-suave); color: var(--destaque);
+}
+.membro__foto svg { width: 42%; height: 42%; opacity: 0.85; }
+.membro__foto img { width: 100%; height: 100%; object-fit: cover; }
+.membro__legenda {
+  position: absolute; z-index: 5; top: calc(100% + 10px); left: 50%; width: max-content; max-width: 150px;
+  padding: 6px 10px; border-radius: 10px; background: #0a66c2; color: #fff; text-align: center;
+  font-size: 0.78rem; line-height: 1.25; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  opacity: 0; pointer-events: none; transform: translate(-50%, 4px); transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.membro__legenda strong { display: block; font-family: var(--fonte-titulo); font-weight: 700; overflow-wrap: anywhere; }
+.membro__legenda small { display: block; font-size: 0.72rem; opacity: 0.88; overflow-wrap: anywhere; }
+.membro:first-child .membro__legenda { left: 0; transform: translate(0, 4px); }
+.membro:last-child .membro__legenda { left: auto; right: 0; transform: translate(0, 4px); }
+@media (hover: hover) and (pointer: fine) {
+  .membro__alvo:hover .membro__legenda { opacity: 1; transform: translate(-50%, 0); }
+  .membro:first-child .membro__alvo:hover .membro__legenda, .membro:last-child .membro__alvo:hover .membro__legenda { transform: translate(0, 0); }
+}
+.membro__alvo:focus-visible .membro__legenda { opacity: 1; transform: translate(-50%, 0); }
+.membro:first-child .membro__alvo:focus-visible .membro__legenda, .membro:last-child .membro__alvo:focus-visible .membro__legenda { transform: translate(0, 0); }
+
+/* Premiações e competições */
+.premios { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.premio {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto; align-content: center; gap: 4px 14px; align-items: center;
+  border: 1px solid var(--linha); border-radius: 16px; padding: 14px; background: rgba(0, 0, 0, 0.14);
+  transition: transform 0.18s ease;
+}
+@media (hover: hover) and (pointer: fine) { .premio:hover { transform: translateY(-2px); } }
+.premio__icone { grid-row: 1 / span 2; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--destaque-suave); color: var(--destaque); }
+.premio__icone svg { width: 22px; height: 22px; }
+.premio__nome { font-family: var(--fonte-titulo); font-weight: 700; font-size: 1.05rem; line-height: 1.2; overflow-wrap: anywhere; }
+.premio__detalhe { font-size: 0.88rem; color: var(--texto-suave); overflow-wrap: anywhere; }
+.premio--conquista { border-color: var(--destaque); background: rgba(155, 225, 90, 0.09); }
+.premio--conquista .premio__icone { background: var(--destaque); color: var(--sobre-destaque); }
+.premio--vazio:not(.premio--conquista) .premio__icone { color: rgba(155, 225, 90, 0.7); }
+.barra { display: block; height: 10px; border-radius: 6px; background: rgba(255, 255, 255, 0.14); }
+.barra--fina { height: 8px; background: rgba(255, 255, 255, 0.08); }
+
+/* ---------- Frase do projeto ---------- */
+.slogan {
+  text-align: center; font-family: var(--fonte-slogan); font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em;
+  font-size: clamp(0.9rem, 4.7vw, 1.5rem); line-height: 1.45; padding: 20px 8px;
+}
+.slogan em { font-style: normal; color: var(--destaque); }
+
+/* ---------- Instagram e comunidade: lado a lado em qualquer tela ---------- */
+.social { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+/* Abaixo de 600 px o cartão fica estreito demais para ícone, nome e seta lado a lado: empilha o ícone sobre o nome. */
+.cartao--social .cartao__titulo { overflow-wrap: normal; }
+@media (max-width: 599px) {
+  .social { gap: 10px; }
+  .cartao--social { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; gap: 8px; padding: 16px 8px; }
+  .cartao--social .cartao__seta { display: none; }
+  .cartao--social .cartao__titulo { font-size: 1rem; }
+}
+
+/* ---------- Telas maiores: a coluna continua estreita, só ganha mais respiro ---------- */
+@media (min-width: 768px) {
+  .pilha { gap: 16px; }
+  .cartao { min-height: 82px; padding: 16px 20px; }
+  .cartao--social { padding: 16px; gap: 12px; }
+  .painel { padding: 28px; }
+  .topo { margin-top: 8px; }
+}
+
+/* Celular deitado ou janela baixa: o conteúdo continua centralizado, sem cortar. */
+@media (max-height: 480px) and (orientation: landscape) {
+  .marca { max-width: 420px; margin-inline: auto; }
+}
+
+/* ---------- Quem pede menos movimento ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .deco { animation: none; }
+  .reveal { transition: none; }
+  .brilho:hover::before, .brilho:active::before, .brilho:focus-visible::before, .brilho:has(:focus-visible)::before { animation: none; }
+  .cartao, .membro__alvo, .premio, .video__play { transition: none; }
+  .cartao--acesso { animation: none; }
+}

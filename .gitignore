@@ -1,0 +1,12 @@
+# Dependências e pastas geradas
+node_modules/
+.vercel/
+
+# Segredos: nunca vão para o repositório
+.env
+.env.*
+
+# Sistema e editor
+.DS_Store
+Thumbs.db
+.vscode/
