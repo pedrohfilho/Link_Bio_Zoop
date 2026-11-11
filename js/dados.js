@@ -45,7 +45,7 @@ window.DADOS_LINK = {
     // Para ligar: troque ativo para true e preencha a url.
     { tipo: "acesso", titulo: "Acessar o Zoop", url: "", ativo: false },
 
-    { tipo: "formulario", titulo: "Formulário 1", url: "" },
+    { tipo: "formulario", titulo: "Formulário 1", url: "https://forms.gle/3onWYUZP8z7eRXWV7" },
 
     { tipo: "video", titulo: "Vídeo", youtube: "g06VRhkBpvs" },
 
