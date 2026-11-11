@@ -47,7 +47,7 @@ window.DADOS_LINK = {
 
     { tipo: "formulario", titulo: "Formulário 1", url: "" },
 
-    { tipo: "video", titulo: "Vídeo", youtube: "" },
+    { tipo: "video", titulo: "Vídeo", youtube: "g06VRhkBpvs" },
 
     { tipo: "formulario", titulo: "Formulário 2", url: "" },
     { tipo: "formulario", titulo: "Formulário 3", url: "" },
