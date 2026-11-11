@@ -329,6 +329,7 @@
   (dados.blocos || []).forEach(function (bloco, i) {
     var montar = MONTADORES[bloco.tipo];
     if (!montar) return;
+    if (bloco.ativo === false) return; // qualquer bloco com ativo: false fica guardado nos dados, mas não aparece
     var montado = montar(bloco);
     if (!montado) return; // bloco sem conteúdo (ex.: descrição vazia): não aparece
     pilha.appendChild(item(montado, Math.min(i, 3) * 0.04));

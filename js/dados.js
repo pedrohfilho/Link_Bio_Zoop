@@ -3,6 +3,7 @@
 //
 // Regras:
 //  - Campo vazio ("") significa "ainda não definido": o bloco aparece, mas sem link ou sem imagem.
+//  - ativo: false em qualquer bloco o esconde da página (os dados ficam aqui, prontos para ligar depois).
 //  - Links precisam começar com https:// (outros endereços são ignorados por segurança).
 //  - Fotos: caminho dentro de assets/ (ex.: "assets/equipe/ana.webp") ou endereço https://.
 //  - Vídeo: pode ser o código do YouTube (11 caracteres) ou o endereço completo. Use vídeo "não listado".
@@ -49,9 +50,13 @@ window.DADOS_LINK = {
 
     { tipo: "video", titulo: "Vídeo", youtube: "g06VRhkBpvs" },
 
-    { tipo: "formulario", titulo: "Formulário 2", url: "" },
-    { tipo: "formulario", titulo: "Formulário 3", url: "" },
-    { tipo: "formulario", titulo: "Formulário 4", url: "" },
+    // Pesquisa de experiência (vem depois do vídeo).
+    { tipo: "formulario", titulo: "Pesquisa de Experiência do Zoop", url: "https://script.google.com/macros/s/AKfycbwBbYoieJxovu6Yoyrn_THu1QHku768tB1WWOOnpvizB7fRE4Qsmk194puZjiYegETE/exec" },
+
+    // Pesquisas para prestadores: prontas para ligar, mas INATIVAS (não aparecem na página).
+    // Para ligar: troque ativo para true e preencha a url.
+    { tipo: "formulario", titulo: "Pesquisa para Prestadores de Serviços Pet", url: "", ativo: false },
+    { tipo: "formulario", titulo: "Pesquisa para Autônomos de Serviços Pet", url: "", ativo: false },
 
     {
       tipo: "equipe",
