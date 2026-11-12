@@ -65,9 +65,16 @@ classDiagram
     +texto url
     +booleano ativo
   }
+  class Chamada {
+    +texto titulo
+    +texto texto
+  }
   class Formulario {
     +texto titulo
+    +texto subtitulo
+    +texto selo
     +texto url
+    +booleano ativo
   }
   class Video {
     +texto titulo
@@ -119,6 +126,7 @@ classDiagram
   Pagina "1" *-- "*" Bloco
   Pagina "1" *-- "1" Bolhas
   Bloco <|-- Descricao
+  Bloco <|-- Chamada
   Bloco <|-- Acesso
   Bloco <|-- Formulario
   Bloco <|-- Video

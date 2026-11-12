@@ -27,24 +27,28 @@ window.DADOS_LINK = {
   blocos: [
     // Frase logo abaixo da logo, explicando o que é o projeto. Vazia, não aparece (e não deixa espaço em branco).
     // Pode ter qualquer tamanho. O que estiver entre asteriscos fica em verde; "\n" quebra a linha.
-    { tipo: "descricao", texto: "" },
+    { tipo: "descricao", texto: "O *Zoop* é um projeto de TCC que estamos levando adiante para virar uma *startup*: um aplicativo que conecta quem tem pet a quem cuida dele, reunindo agenda, conversas e pagamentos em um só lugar." },
+
+    // Chamada acima das pesquisas: título (o que entre asteriscos fica em verde) e uma linha explicando o que fazer.
+    { tipo: "chamada", titulo: "Participe da *pesquisa*" },
 
     // Botão de destaque para o sistema do Zoop, pronto para quando o sistema estiver no ar.
     // ativo: false  -> o botão NÃO aparece na página.
     // Para ligar: troque ativo para true e preencha a url.
     { tipo: "acesso", titulo: "Acessar o Zoop", url: "", ativo: false },
 
-    { tipo: "formulario", titulo: "Pesquisa para Desenvolvimento do Zoop", url: "https://forms.gle/3onWYUZP8z7eRXWV7" },
+    { tipo: "formulario", titulo: "Pesquisa para Desenvolvimento do Zoop", subtitulo: "Para quem tem pet", selo: "tutores", url: "https://forms.gle/3onWYUZP8z7eRXWV7" },
 
     { tipo: "video", titulo: "Vídeo", youtube: "g06VRhkBpvs" },
 
     // Pesquisa de experiência (vem depois do vídeo).
-    { tipo: "formulario", titulo: "Pesquisa de Experiência do Zoop", url: "https://script.google.com/macros/s/AKfycbyhVckXxVGmSp6WOy4keGZ6aOukYdNLKmrvDew5lZvWaODxECqk2juvgp4wFbP36Dg/exec" },
+    { tipo: "formulario", titulo: "Pesquisa de Experiência do Zoop", subtitulo: "Para tutores: depois de assistir ao vídeo", selo: "tutores", url: "https://script.google.com/macros/s/AKfycbyhVckXxVGmSp6WOy4keGZ6aOukYdNLKmrvDew5lZvWaODxECqk2juvgp4wFbP36Dg/exec" },
 
-    // Pesquisas para prestadores: prontas para ligar, mas INATIVAS (não aparecem na página).
-    // Para ligar: troque ativo para true e preencha a url.
-    { tipo: "formulario", titulo: "Pesquisa para Prestadores de Serviços Pet", url: "", ativo: false },
-    { tipo: "formulario", titulo: "Pesquisa para Autônomos de Serviços Pet", url: "", ativo: false },
+    // Pesquisa para prestadores de serviços pet (formulário geral, com vídeo no começo).
+    { tipo: "formulario", titulo: "Pesquisa para Prestadores de Serviços Pet", subtitulo: "Para donos e funcionários de serviços pet", selo: "prestadores", url: "https://forms.gle/dedeGpLWV8mUsLNYA" },
+
+    // Pesquisa para autônomos (começa com uma pergunta que separa autônomos de donos, funcionários e tutores).
+    { tipo: "formulario", titulo: "Pesquisa para Autônomos de Serviços Pet", subtitulo: "Para quem trabalha por conta própria", selo: "prestadores autônomos", url: "https://forms.gle/yiQdv2cDVmQnE2nw6" },
 
     {
       tipo: "equipe",
@@ -85,8 +89,8 @@ window.DADOS_LINK = {
     {
       tipo: "social",
       itens: [
-        { rotulo: "Instagram", rede: "instagram", url: "" },
-        { rotulo: "Comunidade", rede: "comunidade", url: "" }
+        { rotulo: "Instagram", rede: "instagram", url: "https://www.instagram.com/techzoopet/" },
+        { rotulo: "Comunidade", rede: "comunidade", url: "https://chat.whatsapp.com/F2Xh4pXmmCeAxjaOMMUaDG" }
       ]
     }
   ]

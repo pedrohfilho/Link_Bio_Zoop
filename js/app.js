@@ -85,14 +85,40 @@
   }
 
   // ---------- Blocos ----------
+  // Cartão de pesquisa: em destaque (verde, borda e botão de seta cheio), com uma linha dizendo para quem é.
+  var selosCriados = 0;
   function formulario(b) {
-    var cartao = alvo(b.url, "cartao brilho brilho--lima");
+    var cartao = alvo(b.url, "cartao cartao--pesquisa brilho brilho--lima");
     var ic = criar("span", "cartao__icone");
     ic.appendChild(icone("formulario"));
     cartao.appendChild(ic);
-    cartao.appendChild(criar("span", "cartao__titulo", b.titulo || "Formulário"));
+    var texto = criar("span", "cartao__texto");
+    texto.appendChild(criar("span", "cartao__titulo", b.titulo || "Formulário"));
+    if (b.subtitulo) texto.appendChild(criar("span", "cartao__sub", b.subtitulo));
+    cartao.appendChild(texto);
     cartao.appendChild(icone("seta", "cartao__seta"));
+    // Etiqueta animada na quina ("Participe aqui, tutores"): aparece 2 s depois de abrir e de novo a cada 10 s.
+    // É só um aviso visual repetindo o que o cartão já diz, então fica escondida de leitores de tela e é o último
+    // elemento do cartão (posição absoluta: a ordem no código não muda o visual).
+    if (b.selo) {
+      var selo = criar("span", "cartao__selo", "Participe aqui, " + b.selo);
+      selo.setAttribute("aria-hidden", "true");
+      selo.style.setProperty("--selo-atraso", (2 + selosCriados * 0.5) + "s");
+      selosCriados += 1;
+      cartao.appendChild(selo);
+    }
     return cartao;
+  }
+
+  // Chamada acima das pesquisas: um título e uma linha explicando o que fazer e para que servem as respostas.
+  // O que estiver entre asteriscos no título fica em verde. Sem título e sem texto, não aparece.
+  function chamada(b) {
+    var titulo = String(b.titulo || "").trim(), texto = String(b.texto || "").trim();
+    if (!titulo && !texto) return null;
+    var bloco = criar("div", "chamada");
+    if (titulo) bloco.appendChild(textoRico(criar("h2", "chamada__titulo"), titulo));
+    if (texto) bloco.appendChild(textoRico(criar("p", "chamada__texto"), texto));
+    return bloco;
   }
 
   // Texto com *destaque* em verde e quebras de linha com \n (usado na descrição e na frase do projeto).
@@ -402,6 +428,7 @@
 
   var MONTADORES = {
     descricao: descricao,
+    chamada: chamada,
     acesso: acesso,
     formulario: formulario,
     video: video,
