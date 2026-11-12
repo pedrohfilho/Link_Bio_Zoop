@@ -218,6 +218,85 @@
     return painel;
   }
 
+  // ---------- Fotos das premiações: miniaturas que ampliam ao tocar ----------
+  // Cada foto é só um nome de arquivo (letras minúsculas, números e hífen): a grande fica em assets/premios/<nome>.webp
+  // e a miniatura em assets/premios/<nome>-mini.webp. Sem suporte à janela de ampliação, o toque abre a foto em outra aba.
+  function fotosDoItem(item) {
+    var lista = Array.isArray(item.fotos) ? item.fotos : [];
+    return lista.filter(function (f) { return f && typeof f.arquivo === "string" && /^[a-z0-9-]{1,40}$/.test(f.arquivo); }).slice(0, 6).map(function (f) {
+      return { grande: "assets/premios/" + f.arquivo + ".webp", mini: "assets/premios/" + f.arquivo + "-mini.webp", alt: typeof f.alt === "string" ? f.alt.slice(0, 200) : "" };
+    });
+  }
+
+  var lente = null;
+  function montarLente() {
+    var dialogo = criar("dialog", "lente");
+    dialogo.setAttribute("aria-label", "Foto ampliada");
+    var corpo = criar("div", "lente__corpo");
+    var figura = criar("figure", "lente__figura");
+    var img = criar("img", "lente__img");
+    var legenda = criar("figcaption", "lente__legenda");
+    figura.appendChild(img); figura.appendChild(legenda);
+    var fechar = criar("button", "lente__botao lente__fechar"); fechar.type = "button"; fechar.setAttribute("aria-label", "Fechar foto"); fechar.appendChild(icone("x"));
+    var ant = criar("button", "lente__botao lente__ant"); ant.type = "button"; ant.setAttribute("aria-label", "Foto anterior"); ant.appendChild(icone("esq"));
+    var prox = criar("button", "lente__botao lente__prox"); prox.type = "button"; prox.setAttribute("aria-label", "Próxima foto"); prox.appendChild(icone("dir"));
+    var contador = criar("p", "lente__contador");
+    corpo.appendChild(figura); corpo.appendChild(ant); corpo.appendChild(prox); corpo.appendChild(contador);
+    dialogo.appendChild(corpo); dialogo.appendChild(fechar);
+    document.body.appendChild(dialogo);
+    lente = { dialogo: dialogo, img: img, legenda: legenda, ant: ant, prox: prox, contador: contador, fotos: [], indice: 0, origem: null };
+
+    function ir(passo) { var n = lente.fotos.length; if (n < 2) return; lente.indice = (lente.indice + passo + n) % n; mostrarFoto(); }
+    fechar.addEventListener("click", function () { dialogo.close(); });
+    ant.addEventListener("click", function () { ir(-1); });
+    prox.addEventListener("click", function () { ir(1); });
+    dialogo.addEventListener("click", function (e) { if (e.target === dialogo || e.target === corpo) dialogo.close(); }); // toque fora da foto fecha
+    dialogo.addEventListener("keydown", function (e) { if (e.key === "ArrowLeft") ir(-1); else if (e.key === "ArrowRight") ir(1); });
+    dialogo.addEventListener("close", function () {
+      document.documentElement.classList.remove("lente-aberta");
+      img.removeAttribute("src");
+      if (lente.origem && lente.origem.focus) lente.origem.focus();
+    });
+    var inicioX = null;
+    dialogo.addEventListener("touchstart", function (e) { inicioX = e.touches.length === 1 ? e.touches[0].clientX : null; }, { passive: true });
+    dialogo.addEventListener("touchend", function (e) {
+      if (inicioX === null || !e.changedTouches.length) return;
+      var dx = e.changedTouches[0].clientX - inicioX; inicioX = null;
+      if (Math.abs(dx) > 50) ir(dx < 0 ? 1 : -1);
+    }, { passive: true });
+  }
+  function mostrarFoto() {
+    var f = lente.fotos[lente.indice], varias = lente.fotos.length > 1;
+    lente.img.src = f.grande;
+    lente.img.alt = f.alt;
+    lente.legenda.textContent = f.alt;
+    lente.contador.textContent = varias ? (lente.indice + 1) + " de " + lente.fotos.length : "";
+    lente.ant.hidden = !varias; lente.prox.hidden = !varias;
+  }
+  function abrirLente(fotos, indice, origem) {
+    if (typeof HTMLDialogElement === "undefined" || typeof HTMLDialogElement.prototype.showModal !== "function") return false;
+    if (!lente) montarLente();
+    lente.fotos = fotos; lente.indice = indice; lente.origem = origem;
+    mostrarFoto();
+    try { lente.dialogo.showModal(); } catch (erro) { return false; }
+    document.documentElement.classList.add("lente-aberta");
+    return true;
+  }
+  function galeria(fotos) {
+    var linha = criar("div", "premio__fotos");
+    fotos.forEach(function (f, i) {
+      var a = criar("a", "premio__foto");
+      a.href = f.grande; a.target = "_blank"; a.rel = "noopener noreferrer";
+      a.setAttribute("aria-label", "Ampliar foto" + (f.alt ? ": " + f.alt : ""));
+      var img = criar("img");
+      img.src = f.mini; img.alt = ""; img.width = 300; img.height = 300; img.loading = "lazy"; img.decoding = "async";
+      a.appendChild(img);
+      a.addEventListener("click", function (e) { if (abrirLente(fotos, i, a)) e.preventDefault(); });
+      linha.appendChild(a);
+    });
+    return linha;
+  }
+
   function premiacoes(b) {
     var painel = criar("section", "painel");
     var titulo = b.titulo || "Premiações e competições";
@@ -251,6 +330,12 @@
         var detalhe = [p.ano, p.resultado].filter(Boolean).join(" · ");
         linha.appendChild(criar("span", "premio__detalhe", detalhe));
         li.appendChild(linha);
+        var fotos = fotosDoItem(p);
+        if (fotos.length) {
+          // As miniaturas ficam dentro do cartão (compacto). Se o cartão for um link, vão logo abaixo, para não aninhar links.
+          if (linha.tagName === "DIV") { linha.classList.add("premio--fotos"); linha.appendChild(galeria(fotos)); }
+          else li.appendChild(galeria(fotos));
+        }
         lista.appendChild(li);
       });
     }
@@ -386,94 +471,9 @@
       return nome;
     }
 
-    // ---------- Sons: só quando a pessoa toca numa bolha (nunca sozinhos) ----------
-    // O "plop" e o "blub" do peixinho são gerados na hora pelo navegador (Web Audio, sem arquivo); os bichinhos têm um MP3
-    // curtinho em assets/sons/. A configuração fica em dados.js (bolhas.sons).
-    var sons = cfg.sons && typeof cfg.sons === "object" ? cfg.sons : null;
-    var mapaSons = sons && sons.bichos && typeof sons.bichos === "object" ? sons.bichos : {};
-    var volumeSom = sons && typeof sons.volume === "number" ? Math.max(0, Math.min(1, sons.volume)) : 0.6;
-    var som = { ligado: true, ctx: null, arquivos: {} };
-    try { if (window.localStorage.getItem("zoop-som") === "0") som.ligado = false; } catch (erro) { /* sem armazenamento: segue ligado */ }
-
-    function contextoDeSom() {
-      if (!som.ctx) {
-        var Ctx = window.AudioContext || window.webkitAudioContext;
-        if (!Ctx) return null;
-        try { som.ctx = new Ctx(); } catch (erro) { return null; }
-      }
-      if (som.ctx.state === "suspended" && som.ctx.resume) { try { som.ctx.resume(); } catch (erro) { /* ignora */ } }
-      return som.ctx;
-    }
-    // Um "blip" de água: seno que sobe ou desce de tom, com subida e queda suaves.
-    function blip(c, inicio, de, para, dur, vol) {
-      var o = c.createOscillator(), g = c.createGain();
-      o.type = "sine";
-      o.frequency.setValueAtTime(de, inicio);
-      o.frequency.exponentialRampToValueAtTime(para, inicio + dur);
-      g.gain.setValueAtTime(0.0001, inicio);
-      g.gain.exponentialRampToValueAtTime(Math.max(0.0002, vol), inicio + 0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001, inicio + dur + 0.03);
-      o.connect(g); g.connect(c.destination);
-      o.start(inicio); o.stop(inicio + dur + 0.05);
-    }
-    function plop() {
-      var c = contextoDeSom(); if (!c) return;
-      blip(c, c.currentTime, 900, 260, 0.09, 0.32 * volumeSom);
-    }
-    function blub() {
-      var c = contextoDeSom(); if (!c) return;
-      var t = c.currentTime;
-      blip(c, t + 0.06, 300, 620, 0.08, 0.26 * volumeSom);
-      blip(c, t + 0.19, 380, 760, 0.07, 0.2 * volumeSom);
-    }
-    function somDoBicho(nome) {
-      if (nome === "blub") { blub(); return; }
-      if (typeof nome !== "string" || !/^[a-z0-9-]{1,40}$/.test(nome)) return;
-      var audio = som.arquivos[nome];
-      if (!audio) { audio = som.arquivos[nome] = new Audio("assets/sons/" + nome + ".mp3"); }
-      audio.volume = volumeSom;
-      try { audio.currentTime = 0; } catch (erro) { /* ainda não carregou */ }
-      var p = audio.play();
-      if (p && p.catch) p.catch(function () {});
-    }
-    function darSom(animal) {
-      if (!som.ligado) return;
-      plop();
-      var bicho = mapaSons[animal];
-      if (bicho) window.setTimeout(function () { somDoBicho(bicho); }, 90);
-    }
-
-    // Botão discreto no fim da página para ligar ou desligar o som (só existe se houver sons configurados).
-    if (sons) {
-      var fim = document.querySelector(".fim");
-      if (fim && fim.parentNode) {
-        var linha = criar("p", "som");
-        var botao = criar("button", "som__botao");
-        botao.type = "button";
-        var icone_ = icone(som.ligado ? "som" : "mudo");
-        var texto = criar("span");
-        botao.appendChild(icone_); botao.appendChild(texto);
-        var atualizar = function () {
-          icone_.firstChild.setAttribute("href", som.ligado ? "#som" : "#mudo");
-          texto.textContent = "Som ao tocar nas bolhas: " + (som.ligado ? "ligado" : "desligado");
-          botao.setAttribute("aria-pressed", som.ligado ? "true" : "false");
-        };
-        botao.addEventListener("click", function () {
-          som.ligado = !som.ligado;
-          try { window.localStorage.setItem("zoop-som", som.ligado ? "1" : "0"); } catch (erro) { /* ignora */ }
-          atualizar();
-          if (som.ligado) plop(); // confirma o som ligado (e libera o áudio no iPhone)
-        });
-        atualizar();
-        linha.appendChild(botao);
-        fim.parentNode.insertBefore(linha, fim);
-      }
-    }
-
-    function estourar(bolha, v, animal, porToque) {
+    function estourar(bolha, v) {
       if (bolha.classList.contains("bolha--estoura")) return;
       bolha.classList.add("bolha--estoura");
-      if (porToque) darSom(animal); // som só quando a pessoa tocou
       for (var i = 0; i < 9; i++) {
         var gota = criar("i", "gota");
         gota.style.setProperty("--ang", (i * 40 + Math.random() * 20) + "deg");
@@ -530,18 +530,22 @@
       var ativa = false, descartada = false, temporizador = 0;
       camada.appendChild(bolha);
       bolha.classList.add("bolha--espera");
-      function mostrar() {
+      // A bolha só aparece depois que o primeiro quadro do vídeo foi desenhado: antes disso alguns celulares mostram o
+      // vídeo como um quadrado por um instante, antes de aplicar o recorte redondo.
+      var pedindo = false;
+      function revelar() {
         if (ativa || descartada) return;
         ativa = true;
         bolha.classList.remove("bolha--espera");
-        temporizador = window.setTimeout(function () { estourar(bolha, v, nomeAnimal, false); }, duracao);
+        temporizador = window.setTimeout(function () { estourar(bolha, v); }, duracao);
       }
-      // Tocar na bolha estoura na hora (com som, se estiver ligado).
-      bolha.addEventListener("click", function () {
-        if (!ativa || descartada) return;
-        window.clearTimeout(temporizador);
-        estourar(bolha, v, nomeAnimal, true);
-      });
+      function mostrar() {
+        if (ativa || descartada || pedindo) return;
+        pedindo = true;
+        var depoisDoQuadro = function () { window.requestAnimationFrame(function () { window.requestAnimationFrame(revelar); }); };
+        if (v.requestVideoFrameCallback) { try { v.requestVideoFrameCallback(depoisDoQuadro); } catch (erro) { depoisDoQuadro(); } } else { depoisDoQuadro(); }
+        window.setTimeout(revelar, 700); // garantia: nunca deixa a bolha esperando para sempre
+      }
       function descartar() {
         if (ativa || descartada) return;
         descartada = true;
@@ -561,8 +565,8 @@
     function onda(inicial) {
       if (document.hidden) return; // aba em segundo plano: pula esta rodada
       var estreita = (window.innerWidth || 360) < 600;
-      var total = estreita ? 4 : 5;
-      var alturas = embaralhar([14, 28, 42, 56, 68].slice(0, total)); // alturas finais diferentes
+      var total = estreita ? 3 : 5;
+      var alturas = embaralhar((estreita ? [16, 38, 62] : [14, 28, 42, 56, 68]).slice(0, total)); // alturas finais diferentes
       var primeiro = Math.random() < 0.5 ? 0 : 1;                      // lados alternados
       // A primeira rodada sai rápido (quem acabou de chegar vê logo os bichinhos); as seguintes se espalham pelo intervalo.
       var passo = inicial ? 1100 : intervalo / total;

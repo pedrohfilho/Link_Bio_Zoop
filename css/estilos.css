@@ -308,6 +308,52 @@ div.cartao { cursor: default; }
 .barra { display: block; height: 10px; border-radius: 6px; background: rgba(255, 255, 255, 0.14); }
 .barra--fina { height: 8px; background: rgba(255, 255, 255, 0.08); }
 
+/* Fotos das premiações: miniaturas que ampliam ao tocar. */
+.premio__fotos { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 2px; }
+/* Dentro do cartão: miniaturas pequenas à direita (ou embaixo do texto em telas estreitas). */
+.premio--fotos { grid-template-columns: auto minmax(0, 1fr) auto; }
+.premio--fotos .premio__fotos { grid-column: 3; grid-row: 1 / span 2; flex-wrap: nowrap; gap: 6px; margin: 0; }
+.premio--fotos .premio__foto { width: 52px; height: 52px; border-radius: 10px; }
+@media (max-width: 470px) {
+  .premio--fotos { grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto auto; }
+  .premio--fotos .premio__fotos { grid-column: 2; grid-row: 3; margin-top: 8px; }
+  .premio--fotos .premio__foto { width: 48px; height: 48px; }
+}
+@media (max-width: 300px) {
+  .premio { gap: 4px 10px; padding: 12px; }
+  .premio__icone { width: 36px; height: 36px; border-radius: 10px; }
+  .premio__icone svg { width: 18px; height: 18px; }
+  .premio__nome { font-size: 0.98rem; }
+}
+.premio__foto {
+  display: block; width: 76px; height: 76px; border-radius: 12px; overflow: hidden; border: 1px solid var(--linha); background: rgba(0, 0, 0, 0.2);
+  transition: transform 0.18s ease, border-color 0.18s ease; -webkit-tap-highlight-color: transparent;
+}
+.premio__foto img { display: block; width: 100%; height: 100%; object-fit: cover; }
+@media (hover: hover) and (pointer: fine) { .premio__foto:hover { transform: translateY(-2px); border-color: var(--destaque); } }
+html.lente-aberta { overflow: hidden; }
+.lente { border: 0; padding: 0; margin: 0; width: 100%; max-width: none; height: 100%; max-height: none; background: transparent; color: var(--texto); }
+.lente::backdrop { background: rgba(2, 18, 15, 0.92); }
+.lente__corpo {
+  position: relative; width: 100%; height: 100%; display: grid; place-items: center;
+  padding: max(60px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(44px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+}
+.lente__figura { margin: 0; display: grid; justify-items: center; gap: 10px; max-width: 100%; min-height: 0; }
+.lente__img { display: block; max-width: 100%; max-height: calc(100vh - 170px); max-height: calc(100dvh - 170px); object-fit: contain; border-radius: 14px; animation: lente-entra 0.25s ease-out; }
+.lente__legenda { max-width: 60ch; font-size: 0.9rem; line-height: 1.4; text-align: center; color: var(--texto-suave); overflow-wrap: anywhere; }
+.lente__botao {
+  position: absolute; z-index: 2; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; cursor: pointer;
+  border: 1px solid var(--linha); background: rgba(255, 255, 255, 0.12); color: var(--texto); -webkit-tap-highlight-color: transparent;
+}
+.lente__botao[hidden] { display: none; }
+.lente__botao svg { width: 22px; height: 22px; }
+.lente__fechar { top: max(10px, env(safe-area-inset-top)); right: max(10px, env(safe-area-inset-right)); }
+.lente__ant { left: max(8px, env(safe-area-inset-left)); top: 50%; margin-top: -24px; }
+.lente__prox { right: max(8px, env(safe-area-inset-right)); top: 50%; margin-top: -24px; }
+.lente__contador { position: absolute; left: 0; right: 0; bottom: max(14px, env(safe-area-inset-bottom)); margin: 0; text-align: center; font-size: 0.8rem; color: var(--texto-mudo); }
+@keyframes lente-entra { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .lente__img { animation: none; } }
+
 /* ---------- Frase do projeto ---------- */
 /* A frase balança de leve e tem bastante espaço acima e abaixo. */
 .frase { position: relative; padding: clamp(38px, 11vw, 64px) 0; }
@@ -331,14 +377,12 @@ div.cartao { cursor: default; }
 }
 /* Esperando o vídeo começar a tocar: fica no lugar, quase invisível (mas "na tela", para o Safari deixar o vídeo rodar). */
 .bolha--espera { animation: none; opacity: 0.01; }
-/* Depois que a bolha aparece, dá para tocar nela: estoura na hora (e, com o som ligado, faz plop). */
-.bolha:not(.bolha--espera):not(.bolha--estoura) { pointer-events: auto; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .bolha__disco {
   position: absolute; top: 0; right: 0; bottom: 0; left: 0; border-radius: 50%; overflow: hidden; background: #0b3a31;
   animation: bolha-oscilar 3.2s ease-in-out infinite alternate; animation-delay: var(--fase, 0s);
   box-shadow: 0 0 18px rgba(170, 255, 230, 0.35), 0 10px 22px rgba(0, 0, 0, 0.3);
 }
-.bolha__disco video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.bolha__disco video { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 50%; -webkit-clip-path: circle(50% at 50% 50%); clip-path: circle(50% at 50% 50%); }
 /* Brilho da bolha: reflexos de luz e um aro que muda de cor, por cima do vídeo. */
 .bolha__disco::before {
   content: ""; position: absolute; top: 0; right: 0; bottom: 0; left: 0; border-radius: 50%; pointer-events: none;
@@ -349,7 +393,7 @@ div.cartao { cursor: default; }
   box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.7), inset 0 0 14px 2px rgba(255, 255, 255, 0.35);
 }
 .bolha__disco::after {
-  content: ""; position: absolute; top: 0; right: 0; bottom: 0; left: 0; border-radius: 50%; pointer-events: none; mix-blend-mode: screen; opacity: 0.9;
+  content: ""; position: absolute; top: 0; right: 0; bottom: 0; left: 0; border-radius: 50%; pointer-events: none; opacity: 0.5;
   background: conic-gradient(from 40deg, rgba(255, 120, 200, 0.55), rgba(120, 200, 255, 0.55), rgba(140, 255, 170, 0.5), rgba(255, 230, 120, 0.5), rgba(255, 120, 200, 0.55));
   -webkit-mask-image: radial-gradient(circle, transparent 55%, #000 93%); mask-image: radial-gradient(circle, transparent 55%, #000 93%);
 }
@@ -373,16 +417,6 @@ div.cartao { cursor: default; }
   0% { opacity: 0.95; transform: rotate(var(--ang)) translateX(calc(var(--tam) * 0.42)) scale(1); }
   100% { opacity: 0; transform: rotate(var(--ang)) translateX(calc(var(--tam) * 0.42 + var(--tam) * var(--dist) * 0.7)) scale(0.3); }
 }
-
-/* Botão de som no fim da página: discreto. */
-.som { display: flex; justify-content: center; margin: 10px 0 0; }
-.som__botao {
-  display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 8px 14px; border-radius: 999px; cursor: pointer;
-  background: rgba(255, 255, 255, 0.06); border: 1px solid var(--linha); color: var(--texto-suave);
-  font-family: var(--fonte-texto, inherit); font-size: 0.82rem; line-height: 1.2; -webkit-tap-highlight-color: transparent;
-}
-.som__botao svg { width: 18px; height: 18px; flex: none; color: var(--destaque); }
-@media (hover: hover) and (pointer: fine) { .som__botao:hover { background: rgba(255, 255, 255, 0.1); color: var(--texto); } }
 
 /* ---------- Instagram e comunidade: lado a lado em qualquer tela ---------- */
 .social { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
